@@ -1,4 +1,4 @@
-;; Quick script to fetch the newest OOTS comic
+;; Quick script to fetch the newest OOTS comic, avoiding Atlantico's Great Firewall.
 
 (require 'regex)
 (require 'http-client)
@@ -10,7 +10,7 @@
 (define oots-rss-location "http://www.giantitp.com/comics/oots.rss")
 (define oots-storage-dir "comics")
 
-;; Reads the RSS, gets the first (most recent) entry and returns the title and the link
+;; Reads the RSS, gets the first (most recent) entry and returns the title and the link.
 (define (fetch-latest-comic-item url)
   (with-input-from-string (http:GET url)
     (lambda ()
@@ -20,21 +20,26 @@
              (oots-link (rss:item-link rss-item)))
         (list oots-title oots-link)))))
 
+;; Checks if the file given by destination-file exists.
+;; If not, downloads from comic-url and saves it in the specified location
+;; Also, creates the destination directory if it does not exist
 (define (check-existing comic-url destination-file)
   (let ((filename (last (uri-split-path comic-url))))
     (unless (directory? oots-storage-dir)
       (create-directory oots-storage-dir))
-    (unless (file-exists? destination-file)
+    (if (file-exists? destination-file)
       #f
       (with-output-to-file destination-file
         (lambda ()
           (print (http:GET comic-url)))))))
 
+;; Finds the link to the comic in the page passed as input.
 (define (locate-comic-image-link input)
   (string-append
    (uri-host (uri oots-rss-location))
    (last (string-search "(<TD align=\"center\"><IMG src=\"(.*gif)\"></TD>)" input))))
 
+;; Fetches the newest comic from the website and outputs as an image
 (define (fetch-oots-comic)
   (let* ((rss-item (fetch-latest-comic-item oots-rss-location))
          (oots-title (car rss-item))
