@@ -38,7 +38,7 @@
          (oots-html (http:GET oots-link))
          (destination-filename (string-append "oots" (first (string-split oots-title ":")) ".gif")))
     (check-existing (locate-comic-image-link oots-html) destination-filename)
-    (print "Content-type: image/gif")
+    (print "Content-type: image/gif\n")
     (with-input-from-file destination-filename
       (lambda ()
         (print (read-string))))))
