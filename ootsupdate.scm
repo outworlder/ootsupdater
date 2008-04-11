@@ -5,8 +5,10 @@
 (require 'rss)
 (require 'uri)
 (require 'srfi-13)
+(require 'posix)
 
 (define oots-rss-location "http://www.giantitp.com/comics/oots.rss")
+(define oots-storage-dir "comics")
 
 ;; Reads the RSS, gets the first (most recent) entry and returns the title and the link
 (define (fetch-latest-comic-item url)
@@ -20,6 +22,8 @@
 
 (define (check-existing comic-url destination-file)
   (let ((filename (last (uri-split-path comic-url))))
+    (unless (directory? oots-storage-dir)
+      (create-directory oots-storage-dir))
     (unless (file-exists? destination-file)
       #f
       (with-output-to-file destination-file
@@ -36,7 +40,7 @@
          (oots-title (car rss-item))
          (oots-link (cadr rss-item))
          (oots-html (http:GET oots-link))
-         (destination-filename (string-append "oots" (first (string-split oots-title ":")) ".gif")))
+         (destination-filename (string-append oots-storage-dir "/" "oots" (first (string-split oots-title ":")) ".gif")))
     (check-existing (locate-comic-image-link oots-html) destination-filename)
     (print "Content-type: image/gif\n")
     (with-input-from-file destination-filename
