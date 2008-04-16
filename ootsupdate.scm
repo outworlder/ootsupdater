@@ -24,13 +24,16 @@
 
 ;; Reads the RSS, gets the first (most recent) entry and returns the title and the link.
 (define (fetch-latest-comic-item url)
+  (with-exception-handler
+   (lambda (exception)
+          #f)
   (with-input-from-string (http:GET url)
     (lambda ()
       (let* ((rss-data (rss:read))
              (rss-item (car (rss:feed-items rss-data)))
              (oots-title (rss:item-title rss-item))
              (oots-link (rss:item-link rss-item)))
-        (list oots-title oots-link)))))
+        (list oots-title oots-link))))))
 
 ;; Checks if the file given by destination-file exists.
 ;; If not, downloads from comic-url and saves it in the specified location
