@@ -28,18 +28,14 @@
    (lambda (exit-error)
      (with-exception-handler
       (lambda (exception)
-        (print "Exception in fetch-latest-comic-item:" exception)
         (exit-error (list)))
       (lambda ()
-        (print "fetch-latest-comic-item")
         (with-input-from-string (http:GET url)
           (lambda ()
-            (print "URL fetched.")
             (let* ((rss-data (rss:read))
                    (rss-item (car (rss:feed-items rss-data)))
                    (oots-title (rss:item-title rss-item))
                    (oots-link (rss:item-link rss-item)))
-              (print "oots-title: " oots-title "oots-link:" oots-link)
               (list oots-title oots-link)))))))))
 
 ;; Checks if the file given by destination-file exists.
@@ -69,7 +65,6 @@
   (string-append oots-storage-dir "/" "oots" (first (string-split oots-title ":")) ".gif"))
 
 (define (output-image-data destination-filename)
-  (print "filename:" destination-filename)
   (with-input-from-file destination-filename
     (lambda ()
       (print "Content-type: image/gif\n")
@@ -90,10 +85,8 @@
    (lambda (exception)
      (output-error-message exception))
    (lambda ()
-     (print "Fetching...")
      (let* ((rss-item (fetch-latest-comic-item oots-rss-location))
             (latest-saved (load-latest)))
-       (print "RSS-Item: " rss-item "Latest-saved: " latest-saved)
        (if (and (null? rss-item)
                 (null? latest-saved))
            (abort-error-message "RSS could not be retrieved and no previous comic downloaded. Aborting.")
