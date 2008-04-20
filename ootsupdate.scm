@@ -71,17 +71,16 @@
       (print (read-string)))))
 
 (define (abort-error-message exception)
+  (print "Content-type: text/plain\n")
   (if (condition? exception)
-      (print "Content-type: text/plain\n")
-      (print "Exception: " ((condition-property-accessor 'exn 'message) exception))
+      (begin
+        (print "Exception: " ((condition-property-accessor 'exn 'message) exception))
+        (raise exception))
       (print "Error: " exception))
   (exit))
 
 (define (fetch-oots-html oots-link)
   (http:GET oots-link))
-
-(define (exception-handler exception)
-  (handle-exception))
 
 ;; Fetches the newest comic from the website and outputs as an image
 (define (fetch-oots-comic)
@@ -100,12 +99,12 @@
                        (car latest-saved)
                        (if (null? rss-item)
                            (car latest-saved)
-                           (begin
-                             (check-existing
-                              (locate-comic-image-link (fetch-oots-html (cadr rss-item))))
-                             (save-latest rss-item)
-                             (car rss-item)))))))
+                           (car rss-item))))))
+             (unless (null? rss-item)
+               (check-existing
+                (locate-comic-image-link (fetch-oots-html (cadr rss-item)))
+                destination-filename)
+               (save-latest rss-item))
              (output-image-data destination-filename)))))))
-
 
 (fetch-oots-comic)
