@@ -1,4 +1,4 @@
-;; Quick script to fetch the newest OOTS comic, avoiding Atlantico's Great Firewall.
+; Quick script to fetch the newest OOTS comic, avoiding Atlantico's Great Firewall.
 
 (use regex)
 (use http-client)
@@ -72,6 +72,7 @@
 
 (define (abort-error-message exception)
   (if (condition? exception)
+      (print "Content-type: text/plain\n")
       (print "Exception: " ((condition-property-accessor 'exn 'message) exception))
       (print "Error: " exception))
   (exit))
@@ -79,11 +80,14 @@
 (define (fetch-oots-html oots-link)
   (http:GET oots-link))
 
+(define (exception-handler exception)
+  (handle-exception))
+
 ;; Fetches the newest comic from the website and outputs as an image
 (define (fetch-oots-comic)
   (with-exception-handler
    (lambda (exception)
-     (output-error-message exception))
+     (abort-error-message exception))
    (lambda ()
      (let* ((rss-item (fetch-latest-comic-item oots-rss-location))
             (latest-saved (load-latest)))
@@ -96,7 +100,7 @@
                        (car latest-saved)
                        (if (null? rss-item)
                            (car latest-saved)
-                           (begin 
+                           (begin
                              (check-existing
                               (locate-comic-image-link (fetch-oots-html (cadr rss-item))))
                              (save-latest rss-item)
