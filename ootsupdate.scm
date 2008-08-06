@@ -10,6 +10,9 @@
 (define oots-rss-location "http://www.giantitp.com/comics/oots.rss")
 (define oots-storage-dir "comics")
 (define oots-config "ootsupdate.cfg")
+(define dilbert-rss-location "http://feedproxy.google.com/DilbertDailyStrip?format=xml")
+(define dilbert-storage-dir "dcomics")
+(define dilbert-config "dilbertupdate.cfg")
 
 (define (save-latest oots-comic)
   (with-output-to-file oots-config
